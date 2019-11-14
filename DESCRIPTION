@@ -1,0 +1,11 @@
+Package: cfDNAkit
+Type: Package
+Title: Quantitative short-fragment cell-free DNA (Title Case)
+Version: 0.1.0
+Author: Pitithat Puranachot
+Maintainer: Pitithat Puranachot <pitithat.pur@pccms.ac.th>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
