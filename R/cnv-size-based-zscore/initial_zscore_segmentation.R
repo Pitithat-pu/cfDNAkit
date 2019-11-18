@@ -101,7 +101,7 @@ reads_extracted_df_info = as.data.frame(t(sapply(reads_extracted_df, function(x)
   chr=x$rname[1]
   # q_lowerbound = chromosomal_coverage_quantile[chr,1]
   # q_upperbound = chromosomal_coverage_quantile[chr,2]
-  q_lowerbound = minimum_coverage_per_bin
+  q_lowerbound = ifelse(chr!="X",minimum_coverage_per_bin,minimum_coverage_per_bin/2)
   q_upperbound = max(region_coverage)
   trimmed = if (region_coverage>0 & q_lowerbound <=  region_coverage &  region_coverage <= q_upperbound ) FALSE else TRUE
   insert_short_fragments = passed_isize[which(passed_isize >= short_length_range[1] & passed_isize <= short_length_range[2])]

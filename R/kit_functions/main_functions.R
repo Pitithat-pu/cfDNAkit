@@ -57,7 +57,6 @@ main_functions.create_blacklist_gr <- function(blacklist_regions){
 }
 ## Extract read information into given sliding windows
 main_function.get_sliding_windows <- function(binsize){
-  ## only work now for 100k bin
   if (main_functions.file_exists(c(qdnaseq_sliding_windows_RDS))) {
     paste0("Reading QDNAseq sliding windows ",qdnaseq_sliding_windows_RDS)
     bins = readRDS(qdnaseq_sliding_windows_RDS)
@@ -324,15 +323,15 @@ main_functions.plot_smoothed_zscore <- function(z_score_df_no_NaN,delta_F_binsiz
     z_score_df_no_NaN$scaledPos,
     z_score_df_no_NaN$smoothed_zscore,
     type=ifelse(delta_F_binsize >= 1000, "l", "p"),
-    cex=0.2,
+    cex=delta_F_binsize/500,
     pch=19,
     col=ifelse(chromosomes[z_score_df_no_NaN$Chromosome] %% 2 == 0, "red", "black"),
     ylim=c(plot_lowerbound, plot_upperbound),
     xaxt="n",
     ylab=paste("z-score (binsize=",delta_F_binsize," kb)",sep = ""),
     xlab="",
-    cex.axis=1.5,
-    cex.lab=1.5
+    cex.axis=2,
+    cex.lab=2
   )
   regionsOffTheChart <- z_score_df_no_NaN[z_score_df_no_NaN$smoothed_zscore > plot_upperbound | z_score_df_no_NaN$smoothed_zscore < plot_lowerbound,]
   points(
@@ -359,7 +358,7 @@ main_functions.plot_zscore <- function(z_score_df_no_NaN,delta_F_binsize){
     z_score_df_no_NaN$scaledPos,
     z_score_df_no_NaN$size_based_zscore,
     type=ifelse(delta_F_binsize >= 1000, "l", "p"),
-    cex=0.2,
+    cex=delta_F_binsize/500,
     pch=19,
     col=ifelse(chromosomes[z_score_df_no_NaN$Chromosome] %% 2 == 0, "red", "black"),
     ylim=c(plot_lowerbound, plot_upperbound),
