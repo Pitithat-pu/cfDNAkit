@@ -6,14 +6,14 @@ resource_dir=paste0(package_dir,"/resources/")
 main_function_file = paste0(package_dir,"/kit_functions/main_functions.R")
 runtime_variables_filename = "runtime_variables.R"
 ### Resource
-chrLength_file = "/icgc/ngs_share/assemblies/hg19_GRCh37_1000genomes/stats/hg19_chrTotalLength.tsv"
+chrLength_file = paste0(resource_dir,"hg19_chrTotalLength.tsv")
 control_data_dir = "/icgc/dkfzlsdf/analysis/G200/puranach/ctDNA/1_alignment/BH01/createPON_100k/BH01_rmdup_paired_mapped/create_pon_100k/"
 delta_f_control_file= paste0(control_data_dir,"BH01_rmdup_paired_mapped_100k_readbam_pon.csv")
 control_shortread_file = paste0(control_data_dir,"BH01_rmdup_paired_mapped_100k_readbam_pon_shortread.corrected.csv")
 control_longread_file = paste0(control_data_dir,"BH01_rmdup_paired_mapped_100k_readbam_pon_longread.corrected.csv")
 control_zscore_file = paste0(control_data_dir,"BH01_rmdup_paired_mapped_100k_readbam_pon_zscore.csv")
 
-control_density_file = "/icgc/dkfzlsdf/analysis/G200/puranach/ctDNA/1_alignment/BH01/BH01_rmdup_paired_mapped_Fragment-length_report_50_insert_size_density.csv"
+control_density_file = paste0(resource_dir,"BH01_rmdup_paired_mapped_Fragment-length_report_50_insert_size_density.csv")
 qdnaseq_sliding_windows_RDS = paste0(resource_dir,"/AnnotationDataFrame_from_QDNAseq_",binsize,"k.rds")
 duke_blacklist_region = paste0(resource_dir,"/wgEncodeDukeMapabilityRegionsExcludable.bed_GRCh37.gz")
 dac_blacklist_region = paste0(resource_dir,"/wgEncodeDacMapabilityConsensusExcludable.bed_GRCh37.gz")
@@ -35,8 +35,6 @@ plot_upperbound = 10
 plot_lowerbound = -10
 min_heterozygous_SNPs = 5
 
-fragment_perwindow_lower_bound_percent = 0
-fragment_perwindow_upper_bound_percent  = 100
 smooth_moving_window = 10
 calculate_mad = TRUE
 calculate_gwzscore = TRUE
