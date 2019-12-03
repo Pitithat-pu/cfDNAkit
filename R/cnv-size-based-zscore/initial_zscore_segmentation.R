@@ -227,6 +227,15 @@ control_deltaF_df = as.data.frame(t(sapply(all_region_name,function(test_region_
   Delta_F= main_functions.calculate_deltaF(SLRatio_corrected, SLRatio_reference)
 })))
 
+control_log2SLRatio_df = as.data.frame(t(sapply(all_region_name,function(test_region_name){
+  reference_shortread_df = control_shortread_df[!rownames(control_shortread_df) %in% test_region_name,]
+  reference_longread_df = control_longread_df[!rownames(control_longread_df) %in% test_region_name,]
+  SLRatio_corrected = control_shortread_df[test_region_name,] / control_longread_df[test_region_name,]
+  SLRatio_reference = colSums(reference_shortread_df, na.rm = TRUE) / colSums(reference_longread_df, na.rm = TRUE)
+  Delta_F= main_functions.calculate_deltaF(SLRatio_corrected, SLRatio_reference)
+  log2SLratio = main_function.calculate_log2SLratio(SLRatio_corrected, SLRatio_reference)
+})))
+
 # control_SLRatio_df = control_shortread_df / control_longread_df
 # all_region_name = rownames(control_SLRatio_df)
 # get_reference_region <- function(test_regions_df_corrected){
@@ -259,41 +268,20 @@ chrMids <- cumsum(as.numeric(chrLength))
 chrMids <- (chrMids + chroffsets)/2
 names(chrMids) <- names(chrLength)
 
-###
 z_score_df_no_NaN = main_functions.get_zscore_per_binsize(test_regions_df_corrected,control_deltaF_df,binsize)
 z_score_df_no_NaN = z_score_df_no_NaN[which(z_score_df_no_NaN$size_based_zscore != 'NaN' ),]
 z_score_df_no_NaN$scaledPos = (z_score_df_no_NaN$Start + z_score_df_no_NaN$End)/2 +
   as.numeric(chroffsets[z_score_df_no_NaN$Chromosome])
 
-# z_score_df_no_NaN_1000 = main_functions.get_zscore_per_binsize(test_regions_df_corrected,control_deltaF_df,1000)
-# z_score_df_no_NaN_1000 = z_score_df_no_NaN_1000[which(z_score_df_no_NaN_1000$size_based_zscore != 'NaN' ),]
-# z_score_df_no_NaN_1000$scaledPos = (z_score_df_no_NaN_1000$Start + z_score_df_no_NaN_1000$End)/2 +
-#   as.numeric(chroffsets[z_score_df_no_NaN_1000$Chromosome])
-#
-# z_score_df_no_NaN_5000 = main_functions.get_zscore_per_binsize(test_regions_df_corrected,control_deltaF_df,5000)
-# z_score_df_no_NaN_5000 = z_score_df_no_NaN_5000[which(z_score_df_no_NaN_5000$size_based_zscore != 'NaN' ),]
-# z_score_df_no_NaN_5000$scaledPos = (z_score_df_no_NaN_5000$Start + z_score_df_no_NaN_5000$End)/2 +
-#   as.numeric(chroffsets[z_score_df_no_NaN_5000$Chromosome])
-
 z_score_df_no_NaN = test.smoothing_zscore.smooth_zscore(z_score_df_no_NaN)
-# z_score_df_no_NaN_1000 = test.smoothing_zscore.smooth_zscore(z_score_df_no_NaN_1000)
 
 
 z_score_df_no_NaN_file = paste0(output_folder,"/",output_file_name,"_z_score_",binsize,".csv")
 write.table(x = z_score_df_no_NaN,
             file = z_score_df_no_NaN_file,
             quote = FALSE,row.names = FALSE,sep = "\t")
-# write.table(x = z_score_df_no_NaN_1000,
-#             file = paste0(output_folder,"/",output_file_name,"_z_score_1000.csv"),
-#             quote = FALSE,row.names = FALSE,sep = "\t")
-# write.table(x = z_score_df_no_NaN_5000,
-#             file = paste0(output_folder,"/",output_file_name,"_z_score_5000.csv"),
-#             quote = FALSE,row.names = FALSE,sep = "\t")
 
 cat(paste0("z_score_df_file = \"",z_score_df_no_NaN_file,"\"\n"),file=runtime_var_file,append = TRUE)
-
-
-
 
 chromosomes <- setNames(1:length(unique(z_score_df_no_NaN$Chromosome)),
                         unique(z_score_df_no_NaN$Chromosome))

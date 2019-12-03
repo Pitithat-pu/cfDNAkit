@@ -200,6 +200,16 @@ delta_f_df = as.data.frame(sapply(all_region_name,function(region_name){
 }) )
 print("Done : Getting DeltaF")
 
+
+log2SLratio_df.corrected = as.data.frame(sapply(all_region_name,function(region_name){
+  if (all(is.na(control_regions_df$`Read Pairs in range`[region_name][[1]])==TRUE)) {
+    log2SLratio = rep(NA,sampling_size)
+  } else {
+    SLRatio.corrected = SLRatio.corrected_df[region_name,]
+    log2SLratio = unlist(log2(SLRatio.corrected/P150_reference))
+  }
+
+}) )
 # print("Calculate z-score for each sample.")
 # all_region_name = rownames(delta_f_df.corrected)
 # control_zscore_df = as.data.frame(sapply(delta_f_df.corrected, function(sample_delta_f){

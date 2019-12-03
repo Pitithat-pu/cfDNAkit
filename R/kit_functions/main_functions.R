@@ -70,7 +70,6 @@ main_function.get_sliding_windows <- function(binsize){
   return(sliding_windows)
 }
 
-
 main_functions.readbam <- function(sliding_windows){
   chrom <- sliding_windows[1]
   start <- sliding_windows[2]
@@ -108,35 +107,6 @@ main_functions.readbam <- function(sliding_windows){
   lst <- lapply(elts, function(elt) .unlist(lapply(bam, "[[", elt)))
 
 }
-# trim_coverage_outliner <- function(reads_extracted_df_info,lower_bound = 10, upper_bound = 100){
-#   # coverage_df = data.frame(`Total Fragments` = reads_extracted_df_info$`Total Fragments`,Trimming = "Before Trimming")
-#   q_lowerbound = quantile(reads_extracted_df_info$`Total Fragments`[which(reads_extracted_df_info$`Total Fragments` >0)],lower_bound/100)
-#   q_upperbound = quantile(reads_extracted_df_info$`Total Fragments`[which(reads_extracted_df_info$`Total Fragments` >0)],upper_bound/100)
-#   trimmed_rows = which(reads_extracted_df_info$`Total Fragments` < q_lowerbound | reads_extracted_df_info$`Total Fragments` > q_upperbound)
-#   reads_extracted_df_info[trimmed_rows,] = NA
-#   print(paste("Trim outbound [",lower_bound,"%,",upper_bound,"%] region : ",length(trimmed_rows)," regions out of "
-#               , nrow(reads_extracted_df_info),sep = ""))
-#   print(paste(sep = "", "Lowerbound - upperbound coverage : ",q_lowerbound," : ",q_upperbound))
-#   # coverage_df = rbind(coverage_df,data.frame(`Total Fragments` = reads_extracted_df_info$`Total Fragments`,Trimming = "After Trimming"))
-#   # p = ggplot(coverage_df, aes(Trimming,`Total Fragments`)) +
-#   #   geom_boxplot(notch=TRUE)
-#   return(reads_extracted_df_info)
-# }
-
-# main_functions.get_chromosomal_coverage_quantile <- function(sliding_windows, reads_extracted_df,lower_bound = 10, upper_bound = 100){
-  # coverage_df = data.frame(`Total Fragments` = reads_extracted_df_info$`Total Fragments`,Trimming = "Before Trimming")
-#   all_chrs = unique(sliding_windows$chromosome)
-#   read_counts = sapply(reads_extracted_df, function(window_info){
-#     length(window_info$isize)
-#   })
-#   chromosomal_coverage_quantile = t(sapply(all_chrs, function(chr){
-#     chr_read_counts = read_counts[startsWith(names(read_counts), paste(chr,":",sep=""))]
-#     chr_q_lowerbound = quantile(chr_read_counts[which(chr_read_counts >0)],fragment_perwindow_lower_bound_percent/100)
-#     chr_q_upperbound = quantile(chr_read_counts[which(chr_read_counts >0)],fragment_perwindow_upper_bound_percent/100)
-#     c(chr_q_lowerbound,chr_q_upperbound)
-#   }))
-#   return(chromosomal_coverage_quantile)
-# }
 
 main_functions.bias_correct <- function(coverage, bias) {
   i <- seq(min(bias, na.rm=TRUE), max(bias, na.rm=TRUE), by = 0.001)
@@ -153,9 +123,17 @@ get_middle_BAFlevel <- function(BAFLevel_file){
   BAFLevel_df[which(!is.na(BAFLevel_df$middleLevel)),]
 }
 
+
+
+
+
 main_functions.calculate_deltaF <- function(SLRatio, SLRatio_reference){
   SLRatio - SLRatio_reference
 }
+main_function.calculate_log2SLratio <- function(SLRatio, SLRatio_reference){
+  log2(SLRatio/SLRatio_reference)
+}
+
 .get_delta_f_corrected <- function(test_region_name,reference_region){
   test_region = reads_extracted_df_info[test_region_name,]
   SLRatio_corrected = test_region$SLRatio_corrected
@@ -164,7 +142,8 @@ main_functions.calculate_deltaF <- function(SLRatio, SLRatio_reference){
     "Average_Size"=mean(test_region$Mean),
     "SLRatio"= SLRatio_corrected,
     "SLRatio_reference"=SLRatio_reference,
-    "Delta_F"= main_functions.calculate_deltaF(SLRatio_corrected, SLRatio_reference)
+    "Delta_F"= main_functions.calculate_deltaF(SLRatio_corrected, SLRatio_reference),# "Delta_F"= main_function.calculate_log2SLratio(SLRatio_corrected, SLRatio_reference)
+    "log2SLratio"= main_function.calculate_log2SLratio(SLRatio_corrected, SLRatio_reference)
   )
 }
 
@@ -193,7 +172,9 @@ get_short_ratio_BAF <- function(reads_extracted_df_info, all_region_name, BAF_re
     chrN_ref_delta_F_mean = mean(region_deltaf,na.rm = TRUE)
     chrN_ref_delta_F_sd = sd(region_deltaf,na.rm = TRUE)
     chrN_sample_delta_F = test_regions_df[which(rownames(test_regions_df)==x),"Delta_F"]
+    chrN_sample_log2SLratio = test_regions_df[which(rownames(test_regions_df)==x),"log2SLratio"]
     size_based_zscore = (chrN_sample_delta_F - chrN_ref_delta_F_mean) / chrN_ref_delta_F_sd
+    # size_based_zscore = (chrN_sample_log2SLratio - chrN_ref_delta_F_mean) / chrN_ref_delta_F_sd
 
     c("Chromosome" = chr_position[1],
       "Start" = chr_position[2],
@@ -201,6 +182,7 @@ get_short_ratio_BAF <- function(reads_extracted_df_info, all_region_name, BAF_re
       "chrN_ref_delta_F_mean"= chrN_ref_delta_F_mean,
       "chrN_ref_delta_F_sd" = chrN_ref_delta_F_sd,
       "chrN_sample_delta_F" = chrN_sample_delta_F,
+      "chrN_sample_log2SLratio" = chrN_sample_log2SLratio,
       "size_based_zscore" = size_based_zscore
     )
   })))
@@ -211,17 +193,50 @@ get_short_ratio_BAF <- function(reads_extracted_df_info, all_region_name, BAF_re
   zscore_df$chrN_ref_delta_F_sd = as.numeric(levels(zscore_df$chrN_ref_delta_F_sd))[zscore_df$chrN_ref_delta_F_sd]
   zscore_df$chrN_sample_delta_F = as.numeric(levels(zscore_df$chrN_sample_delta_F))[zscore_df$chrN_sample_delta_F]
   zscore_df$size_based_zscore = as.numeric(levels(zscore_df$size_based_zscore))[zscore_df$size_based_zscore]
+  zscore_df$chrN_sample_log2SLratio = as.numeric(levels(zscore_df$chrN_sample_log2SLratio))[zscore_df$chrN_sample_log2SLratio]
+  return(zscore_df)
+}
+
+.get_zscore_df <- function(all_region_name,test_regions_df,delta_f_control_df){
+  zscore_df = as.data.frame(t(sapply(all_region_name, function(x){
+    region_deltaf = unlist(delta_f_control_df[x,])
+    chr_position = strsplit(x,"[:-]+")[[1]]
+    chrN_ref_delta_F_mean = mean(region_deltaf,na.rm = TRUE)
+    chrN_ref_delta_F_sd = sd(region_deltaf,na.rm = TRUE)
+    chrN_sample_delta_F = test_regions_df[which(rownames(test_regions_df)==x),"Delta_F"]
+    chrN_sample_log2SLratio = test_regions_df[which(rownames(test_regions_df)==x),"log2SLratio"]
+    # size_based_zscore = (chrN_sample_delta_F - chrN_ref_delta_F_mean) / chrN_ref_delta_F_sd
+    size_based_zscore = (chrN_sample_log2SLratio - chrN_ref_delta_F_mean) / chrN_ref_delta_F_sd
+
+    c("Chromosome" = chr_position[1],
+      "Start" = chr_position[2],
+      "End" = chr_position[3],
+      "chrN_ref_delta_F_mean"= chrN_ref_delta_F_mean,
+      "chrN_ref_delta_F_sd" = chrN_ref_delta_F_sd,
+      "chrN_sample_delta_F" = chrN_sample_delta_F,
+      "chrN_sample_log2SLratio" = chrN_sample_log2SLratio,
+      "size_based_zscore" = size_based_zscore
+    )
+  })))
+  zscore_df$Chromosome = as.character(levels(zscore_df$Chromosome))[zscore_df$Chromosome]
+  zscore_df$Start = as.numeric(levels(zscore_df$Start))[zscore_df$Start]
+  zscore_df$End = as.numeric(levels(zscore_df$End))[zscore_df$End]
+  zscore_df$chrN_ref_delta_F_mean = as.numeric(levels(zscore_df$chrN_ref_delta_F_mean))[zscore_df$chrN_ref_delta_F_mean]
+  zscore_df$chrN_ref_delta_F_sd = as.numeric(levels(zscore_df$chrN_ref_delta_F_sd))[zscore_df$chrN_ref_delta_F_sd]
+  zscore_df$chrN_sample_delta_F = as.numeric(levels(zscore_df$chrN_sample_delta_F))[zscore_df$chrN_sample_delta_F]
+  zscore_df$size_based_zscore = as.numeric(levels(zscore_df$size_based_zscore))[zscore_df$size_based_zscore]
+  zscore_df$chrN_sample_log2SLratio = as.numeric(levels(zscore_df$chrN_sample_log2SLratio))[zscore_df$chrN_sample_log2SLratio]
   return(zscore_df)
 }
 
 
 main_functions.get_zscore_per_binsize <- function(test_regions_df_corrected,control_deltaF_df,delta_F_binsize){
-  if (delta_F_binsize != binsize){
-    test_regions_df_corrected = .merge_regions(test_regions_df_corrected,delta_F_binsize)
-    test_regions_df_corrected = test_regions_df_corrected[,-1]
-    control_deltaF_df = .merge_regions(control_deltaF_df,delta_F_binsize)
-    control_deltaF_df = control_deltaF_df[,-1]
-  }
+  # if (delta_F_binsize != binsize){
+  #   test_regions_df_corrected = .merge_regions(test_regions_df_corrected,delta_F_binsize)
+  #   test_regions_df_corrected = test_regions_df_corrected[,-1]
+  #   control_deltaF_df = .merge_regions(control_deltaF_df,delta_F_binsize)
+  #   control_deltaF_df = control_deltaF_df[,-1]
+  # }
   all_region_name = rownames(test_regions_df_corrected)
   # print(length(all_region_name))
   z_score_df_corrected = .get_zscore_df(all_region_name,
@@ -290,33 +305,7 @@ main_functions.calculate_gw_zscore <- function(sample_z_score,control_zscore_df)
   sample_sum_square = .sum_square(sample_z_score)
   gw_zscore = (sample_sum_square - mean(control_sum_square)) / sd(control_sum_square)
 }
-#
-# get_zscore_MAD_df <- function(all_region_name,test_regions_df,delta_f_control_df){
-#   zscore_df = as.data.frame(t(sapply(all_region_name, function(x){
-#     test_regions_info = test_regions_df[which(rownames(test_regions_df)==x),]
-#     chr_position = strsplit(x,"[:-]+")[[1]]
-#     chrN_ref_delta_F_median = median(t(as.data.frame(delta_f_control_df[x,])),na.rm=TRUE)
-#     chrN_ref_delta_F_mad = mad(t(as.data.frame(delta_f_control_df[x,])),na.rm = TRUE)
-#     chrN_sample_delta_F = test_regions_info$Delta_F
-#     size_based_zscore = (chrN_sample_delta_F - chrN_ref_delta_F_median) / chrN_ref_delta_F_mad
-#     c("Chromosome" = chr_position[1],
-#       "Start" = chr_position[2],
-#       "End" = chr_position[3],
-#       "chrN_ref_delta_F_median"= chrN_ref_delta_F_median,
-#       "chrN_ref_delta_F_mad" = chrN_ref_delta_F_mad,
-#       "chrN_ref_SLRatio" = test_regions_info$SLRatio_reference,
-#       "chrN_sample_SLRatio" = test_regions_info$SLRatio,
-#       "chrN_sample_delta_F" = chrN_sample_delta_F,
-#       "size_based_zscore" = size_based_zscore
-#     )
-#   })))
-#   zscore_df$Chromosome = as.character(levels(zscore_df$Chromosome))[zscore_df$Chromosome]
-#   zscore_df$Start = as.numeric(levels(zscore_df$Start))[zscore_df$Start]
-#   zscore_df$End = as.numeric(levels(zscore_df$End))[zscore_df$End]
-#   zscore_df$size_based_zscore = as.numeric(levels(zscore_df$size_based_zscore))[zscore_df$size_based_zscore]
-#
-#   return(zscore_df)
-# }
+
 
 main_functions.plot_smoothed_zscore <- function(z_score_df_no_NaN,delta_F_binsize){
   plot(
@@ -380,60 +369,4 @@ main_functions.plot_zscore <- function(z_score_df_no_NaN,delta_F_binsize){
     lines(c(x, x), c(plot_lowerbound, plot_upperbound), col="grey", lty=2)
   abline(h = 0 , col="blue")
   abline(h = cutoff_zscore , col="red",lwd=3)
-
-  # if (delta_F_binsize <= 100) {
-  #   print(paste("Performing PSCBS Segmentation for binsize",delta_F_binsize))
-  #   .segmentation_CBS(z_score_df_no_NaN,delta_F_binsize)
-  # }
-
 }
-#
-# .segmentation_CBS <- function(z_score_df_no_NaN,delta_F_binsize){
-#   data <- z_score_df_no_NaN[,c("Chromosome","scaledPos","size_based_zscore")]
-#   colnames(data) <- c("chromosome","x","y")
-#   data <- dropSegmentationOutliers(data)
-#   gaps <- findLargeGaps(data, minLength = 1e+06)
-#   knownSegments <- gapsToSegments(gaps)
-#   fit <- segmentByCBS(data, knownSegments = knownSegments, seed = 48879, verbose = -10)
-#   fitP <- pruneByHClust(fit, h = 0.75, verbose = -10, distMethod = "euclidean",hclustMethod = "centroid")
-#
-#   segment_df = getSegments(fitP, simplify = TRUE)
-#   segment_df$pass_cutoff = segment_df$mean >= cutoff_zscore[1] | segment_df$mean <= cutoff_zscore[2]
-#   print("Drawing Segmentation Lines")
-#   segments(x0 = segment_df[!segment_df$pass_cutoff,]$start, y0 = segment_df[!segment_df$pass_cutoff,]$mean,
-#            x1 = segment_df[!segment_df$pass_cutoff,]$end, y1 = segment_df[!segment_df$pass_cutoff,]$mean,
-#            col="yellow", lwd=5, lty=2)
-#   segments(x0 = segment_df[segment_df$pass_cutoff,]$start, y0 = segment_df[segment_df$pass_cutoff,]$mean,
-#            x1 = segment_df[segment_df$pass_cutoff,]$end, y1 = segment_df[segment_df$pass_cutoff,]$mean,
-#            col="green", lwd=7)
-#   print(paste("Performing PSCBS Segmentation for binsize",delta_F_binsize,"(Done)"))
-#   print(paste("Writing segmentation to ",output_folder,"/",output_file_name,"_segmentation_",delta_F_binsize,".csv",sep = ""))
-#   write.table(x = segment_df,file = paste(output_folder,"/",output_file_name,"_segmentation_",delta_F_binsize,".csv", sep=""),quote = FALSE,row.names = FALSE)
-#   print(paste("Writing segmentation to ",output_folder,"/",output_file_name,"_segmentation_",delta_F_binsize,".csv"," (Done)",sep = ""))
-#
-# }
-#
-# .smooth_segmentation_CBS <- function(z_score_df_no_NaN,delta_F_binsize){
-#   data <- z_score_df_no_NaN[,c("Chromosome","scaledPos","smoothed_zscore")]
-#   colnames(data) <- c("chromosome","x","y")
-#   data <- dropSegmentationOutliers(data)
-#   gaps <- findLargeGaps(data, minLength = 1e+06)
-#   knownSegments <- gapsToSegments(gaps)
-#   fit <- segmentByCBS(data, knownSegments = knownSegments, seed = 48879, verbose = -10)
-#   fitP <- pruneByHClust(fit, h = 0.75, verbose = -10, distMethod = "euclidean",hclustMethod = "centroid")
-#
-#   segment_df = getSegments(fitP, simplify = TRUE)
-#   segment_df$pass_cutoff = segment_df$mean >= cutoff_zscore[1] | segment_df$mean <= cutoff_zscore[2]
-#   print("Drawing Segmentation Lines")
-#   segments(x0 = segment_df[!segment_df$pass_cutoff,]$start, y0 = segment_df[!segment_df$pass_cutoff,]$mean,
-#            x1 = segment_df[!segment_df$pass_cutoff,]$end, y1 = segment_df[!segment_df$pass_cutoff,]$mean,
-#            col="yellow", lwd=5, lty=2)
-#   segments(x0 = segment_df[segment_df$pass_cutoff,]$start, y0 = segment_df[segment_df$pass_cutoff,]$mean,
-#            x1 = segment_df[segment_df$pass_cutoff,]$end, y1 = segment_df[segment_df$pass_cutoff,]$mean,
-#            col="green", lwd=7)
-#   print(paste("Performing PSCBS Segmentation for binsize",delta_F_binsize,"(Done)"))
-#   print(paste("Writing segmentation to ",output_folder,"/",output_file_name,"_segmentation_",delta_F_binsize,".csv",sep = ""))
-#   write.table(x = segment_df,file = paste(output_folder,"/",output_file_name,"_segmentation_",delta_F_binsize,".csv", sep=""),quote = FALSE,row.names = FALSE)
-#   print(paste("Writing segmentation to ",output_folder,"/",output_file_name,"_segmentation_",delta_F_binsize,".csv"," (Done)",sep = ""))
-#
-# }
