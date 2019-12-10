@@ -53,7 +53,7 @@ if(length(args) == 4 ) {
 }
 
 paste0("Create blacklist genomic regions")
-blacklist_targets_gr = main_functions.create_blacklist_gr(c(duke_blacklist_region,dac_blacklist_region))
+blacklist_targets_gr = main_functions.create_blacklist_gr(c(duke_blacklist_region,dac_blacklist_region,centromere_region))
 paste0("Done : Create blacklist genomic regions")
 
 

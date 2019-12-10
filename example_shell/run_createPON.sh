@@ -19,8 +19,6 @@ for sample_id in ${sample_ids};do
 		CREATE_PON_CMD="${load_R_cmd};Rscript ${cfDNAkit_dir}/PON_generation/create_size-based-pon.R ${runtime_variables_file} ${config_file}"
 
 
-
-
 		EXTRACT_BAM_INFO_job_id=$(echo "${EXTRACT_BAM_INFO_CMD}" | bsub -J ${sample_id}_extract_bam_info -W 10:00 -M 30GB | awk '/is submitted/{print substr($2, 2, length($2)-2);}')
 		echo "Submit EXTRACT_BAM_INFO process : job id ${EXTRACT_BAM_INFO_job_id}"
 		sleep 1s

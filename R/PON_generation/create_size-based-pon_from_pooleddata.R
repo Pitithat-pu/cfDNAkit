@@ -51,18 +51,6 @@ if(!dir.exists(output_folder_temp)) {
   dir.create(output_folder_temp,recursive = TRUE)
 }
 output_folder = output_folder_temp
-# else {
-#   print(paste("Output directory ",output_folder," is already existing",sep = ""))
-#   output_folder = paste(output_folder,format(Sys.time(), "%Y%b%d_%H%M"),sep="")
-#   dir.create(output_folder,recursive = TRUE)
-#   print(paste("Change output directory to ",output_folder,sep=""))
-# }
-
-# if(file.exists(paste(output_folder,"/",output_file_name,".csv",sep = ""))){
-#   print(paste("Destination output file ",output_folder,"/",output_file_name,".csv is already exist",sep = ""))
-#   output_file_name = paste(output_file_name,format(Sys.time(), "%Y%b%d_%H%M"),sep="")
-#   print(paste("Change output filename to ",output_file_name,".csv",sep=""))
-# }
 
 .split_reads = function(all_isize){
   mod_isize = length(all_isize)%%sampling_size
@@ -105,7 +93,7 @@ output_folder = output_folder_temp
   q_upperbound = region_coverage
   if (q_lowerbound >  region_coverage | region_coverage > q_upperbound ){
     ## Regions with low coverage than lower bound or higher than upper bound
-    sampling_read = split(rep(NA,sampling_size),cut(seq_along(rep(NA,sampling_size)),sampling_size, labels = FALSE))
+    sampling_read = split(rep(NA,sampling_size),sampling_size)
     ## give list of reads with NA
   } else  {
     ## if generating control from pooled sample of normal
@@ -141,41 +129,33 @@ shortread_df = as.data.frame(do.call(rbind,control_regions_df$short))
 longread_df = as.data.frame(do.call(rbind,control_regions_df$long))
 
 print("Correct percent GC-bias.")
-# all_region_name_non_NA = rownames(totalread_df[which(complete.cases(totalread_df)),])
 all_region_name_non_NA = rownames(totalread_df)[which(complete.cases(totalread_df))]
 gc_contents = sliding_windows[all_region_name_non_NA,]$gc/100
-totalread.corrected_df = sapply(totalread_df[all_region_name_non_NA,], function(x){
-  main_functions.bias_correct(x,gc_contents)
-})
-rownames(totalread.corrected_df) = all_region_name_non_NA
-readpair.corrected_df = sapply(readpair_df[all_region_name_non_NA,], function(x){
-  main_functions.bias_correct(x,gc_contents)
-})
-rownames(readpair.corrected_df) = all_region_name_non_NA
-shortread.corrected_df = sapply(shortread_df[all_region_name_non_NA,], function(x){
-  main_functions.bias_correct(x,gc_contents)
-})
-rownames(shortread.corrected_df) = all_region_name_non_NA
-longread.corrected_df = sapply(longread_df[all_region_name_non_NA,], function(x){
-  main_functions.bias_correct(x,gc_contents)
-})
-rownames(longread.corrected_df) = all_region_name_non_NA
+
+totalread.corrected = main_functions.bias_correct(totalread_df[all_region_name_non_NA,],gc_contents)
+names(totalread.corrected) = all_region_name_non_NA
+readpair.corrected = main_functions.bias_correct(readpair_df[all_region_name_non_NA,],gc_contents)
+names(readpair.corrected)=all_region_name_non_NA
+shortread.corrected = main_functions.bias_correct(shortread_df[all_region_name_non_NA,],gc_contents)
+names(shortread.corrected) = all_region_name_non_NA
+longread.corrected = main_functions.bias_correct(longread_df[all_region_name_non_NA,],gc_contents)
+names(longread.corrected) = all_region_name_non_NA
 
 temp_shortread.corrected_df = shortread_df
-temp_shortread.corrected_df[all_region_name_non_NA,] = shortread.corrected_df
+temp_shortread.corrected_df[all_region_name_non_NA,] = shortread.corrected
 shortread.corrected_df=temp_shortread.corrected_df
 temp_longread.corrected_df = shortread_df
-temp_longread.corrected_df[all_region_name_non_NA,] = longread.corrected_df
-longread.corrected_df = temp_longread.corrected_df
+temp_longread.corrected_df[all_region_name_non_NA,] = longread.corrected
+longread.corrected = temp_longread.corrected_df
 temp_totalread.corrected_df = totalread_df
-temp_totalread.corrected_df[all_region_name_non_NA,] = totalread.corrected_df
-totalread.corrected_df = temp_totalread.corrected_df
+temp_totalread.corrected_df[all_region_name_non_NA,] = totalread.corrected
+totalread.corrected = temp_totalread.corrected_df
 temp_readpair.corrected_df = readpair_df
-temp_readpair.corrected_df[all_region_name_non_NA,] = readpair.corrected_df
-readpair.corrected_df = temp_totalread.corrected_df
+temp_readpair.corrected_df[all_region_name_non_NA,] = readpair.corrected
+readpair.corrected = temp_totalread.corrected_df
 
 
-SLRatio.corrected_df = shortread.corrected_df / longread.corrected_df
+SLRatio.corrected_df = shortread.corrected / longread.corrected
 colnames(SLRatio.corrected_df) = rep(1:sampling_size)
 print("Done : correct percent GC-bias.")
 print(paste("Writing result to ",output_folder,"/",output_file_name,"_shortread.corrected.csv", sep=""))
@@ -185,9 +165,6 @@ print(paste("Writing result to ",output_folder,"/",output_file_name,"_longread.c
 write.table(longread.corrected_df, file = paste(output_folder,"/",output_file_name,"_longread.corrected.csv", sep=""), sep = "\t")
 print(paste("Done : Writing result to ",output_folder,"/",output_file_name,"_longread.corrected.csv", sep=""))
 
-
-  # reference_short_read = colSums(na.rm = TRUE,shortread.corrected_df[which(startsWith(rownames(shortread.corrected_df),"X")),])
-  # reference_long_read = colSums(na.rm = TRUE,longread.corrected_df[which(startsWith(rownames(longread.corrected_df),"X")),])
 reference_short_read = colSums(na.rm = TRUE,shortread.corrected_df)
 reference_long_read = colSums(na.rm = TRUE,longread.corrected_df)
 
@@ -237,15 +214,6 @@ control_genomewide_zscores = sapply(control_zscore_df_non_NA, function(sample_zs
 print(paste("Writing result to ",output_folder,"/",output_file_name,"_genomewide_zscores.csv", sep=""))
 write.table(x = control_genomewide_zscores, file = paste(output_folder,"/",output_file_name,"_genomewide_zscores.csv", sep=""), sep = "\t")
 print(paste("Done : Writing result to ",output_folder,"/",output_file_name,"_genomewide_zscores.csv", sep=""))
-
-# delta_f_df_correlation = as.data.frame(sapply(all_region_name,function(region_name){
-#   cor(use = "pairwise.complete.obs",sapply(delta_f_df[region_name,],function(x) as.numeric(as.character(x)))
-#       , sapply(delta_f_df.corrected[region_name,],function(x) as.numeric(as.character(x))))
-# }))
-# colnames(delta_f_df_correlation) = c("GC_uncorrected_vs_corrected_correlation")
-# print(paste("Writing deltaF correlation result to ",output_folder,"/",output_file_name,"_deltaf_cor.csv", sep=""))
-# write.table(x = delta_f_df_correlation, file = paste(output_folder,"/",output_file_name,"_deltaf_cor.csv", sep=""), sep = "\t")
-# print(paste("Done : Writing delta F correlation result to ",output_folder,"/",output_file_name,"_deltaf_cor.csv", sep=""))
 
 colnames(delta_f_df.corrected) = rep(1:sampling_size)
 colnames(delta_f_df) = rep(1:sampling_size)

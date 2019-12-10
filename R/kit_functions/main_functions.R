@@ -205,8 +205,8 @@ get_short_ratio_BAF <- function(reads_extracted_df_info, all_region_name, BAF_re
     chrN_ref_delta_F_sd = sd(region_deltaf,na.rm = TRUE)
     chrN_sample_delta_F = test_regions_df[which(rownames(test_regions_df)==x),"Delta_F"]
     chrN_sample_log2SLratio = test_regions_df[which(rownames(test_regions_df)==x),"log2SLratio"]
-    # size_based_zscore = (chrN_sample_delta_F - chrN_ref_delta_F_mean) / chrN_ref_delta_F_sd
-    size_based_zscore = (chrN_sample_log2SLratio - chrN_ref_delta_F_mean) / chrN_ref_delta_F_sd
+    size_based_zscore = (chrN_sample_delta_F - chrN_ref_delta_F_mean) / chrN_ref_delta_F_sd
+    # size_based_zscore = (chrN_sample_log2SLratio - chrN_ref_delta_F_mean) / chrN_ref_delta_F_sd
 
     c("Chromosome" = chr_position[1],
       "Start" = chr_position[2],
@@ -225,7 +225,7 @@ get_short_ratio_BAF <- function(reads_extracted_df_info, all_region_name, BAF_re
   zscore_df$chrN_ref_delta_F_sd = as.numeric(levels(zscore_df$chrN_ref_delta_F_sd))[zscore_df$chrN_ref_delta_F_sd]
   zscore_df$chrN_sample_delta_F = as.numeric(levels(zscore_df$chrN_sample_delta_F))[zscore_df$chrN_sample_delta_F]
   zscore_df$size_based_zscore = as.numeric(levels(zscore_df$size_based_zscore))[zscore_df$size_based_zscore]
-  zscore_df$chrN_sample_log2SLratio = as.numeric(levels(zscore_df$chrN_sample_log2SLratio))[zscore_df$chrN_sample_log2SLratio]
+  # zscore_df$chrN_sample_log2SLratio = as.numeric(levels(zscore_df$chrN_sample_log2SLratio))[zscore_df$chrN_sample_log2SLratio]
   return(zscore_df)
 }
 
@@ -238,7 +238,8 @@ main_functions.get_zscore_per_binsize <- function(test_regions_df_corrected,cont
   #   control_deltaF_df = control_deltaF_df[,-1]
   # }
   all_region_name = rownames(test_regions_df_corrected)
-  # print(length(all_region_name))
+
+  # print(all_region_name)
   z_score_df_corrected = .get_zscore_df(all_region_name,
                                        test_regions_df = test_regions_df_corrected,
                                        delta_f_control_df = control_deltaF_df)

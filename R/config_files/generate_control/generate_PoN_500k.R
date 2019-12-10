@@ -8,8 +8,9 @@ runtime_variables_filename = "pon_500k_runtime_variables.R"
 qdnaseq_sliding_windows_RDS = paste0(resource_dir,"/AnnotationDataFrame_from_QDNAseq_",binsize,"k.rds")
 duke_blacklist_region = paste0(resource_dir,"/wgEncodeDukeMapabilityRegionsExcludable.bed_GRCh37.gz")
 dac_blacklist_region = paste0(resource_dir,"/wgEncodeDacMapabilityConsensusExcludable.bed_GRCh37.gz")
+centromere_region = paste0(resource_dir,"/hg19_centromere.tsv.gz")
 create_pon_outdir_prefix = "create_pon"
-rerun_readbam = FALSE
+rerun_readbam = TRUE
 
 what <- c("qname","rname","pos", "isize")
 maximum_length = 400

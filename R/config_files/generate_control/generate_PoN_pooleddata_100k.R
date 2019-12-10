@@ -1,5 +1,6 @@
 options(digits=10)
 binsize = 100 #kb
+rerun_readbam = TRUE
 package_dir = "/abi/data2/puranach/cfDNAkit/R/"
 resource_dir=paste0(package_dir,"/resources/")
 main_function_file = paste0(package_dir,"/kit_functions/main_functions.R")
@@ -8,8 +9,8 @@ runtime_variables_filename = "pon_runtime_variables.R"
 qdnaseq_sliding_windows_RDS = paste0(resource_dir,"/AnnotationDataFrame_from_QDNAseq_",binsize,"k.rds")
 duke_blacklist_region = paste0(resource_dir,"/wgEncodeDukeMapabilityRegionsExcludable.bed_GRCh37.gz")
 dac_blacklist_region = paste0(resource_dir,"/wgEncodeDacMapabilityConsensusExcludable.bed_GRCh37.gz")
+centromere_region = paste0(resource_dir,"/hg19_centromere.tsv")
 create_pon_outdir_prefix = "create_pon"
-rerun_readbam = FALSE
 
 what <- c("qname","rname","pos", "isize")
 maximum_length = 400
