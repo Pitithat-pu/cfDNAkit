@@ -35,11 +35,6 @@ if (!.file_exists(c(main_function_file))) {
 } else source(main_function_file)
 paste0("Done Load main function file ",main_function_file)
 
-
-
-## Load smooth function and related parameters
-# source(paste0(package_dir,"/cnv-size-based-zscore/test_smoothing_zscore.R"))
-
 if(length(args) == 4 ) {
   capture_targets_file <- args[4]
   if (!main_functions.file_exists(c(capture_targets_file))) {
@@ -53,13 +48,15 @@ if(length(args) == 4 ) {
 }
 
 paste0("Create blacklist genomic regions")
-blacklist_targets_gr = main_functions.create_blacklist_gr(c(duke_blacklist_region,dac_blacklist_region,centromere_region))
+blacklist_targets_gr = main_functions.create_blacklist_gr(c(
+  duke_blacklist_region,dac_blacklist_region,centromere_region))
 paste0("Done : Create blacklist genomic regions")
 
 
 
+
 output_file_name <- paste(tools::file_path_sans_ext(basename(sample_bamfile)),
-                          "_",as.character(binsize),"k",sep="")
+                          "_",as.character(binsize),sep="")
 paste0("Set output prefix to ",output_file_name)
 
 if(!dir.exists(output_folder)) {
@@ -71,7 +68,6 @@ paste0("Copy config file to output directory ",output_folder)
 file.copy(config_file, paste(output_folder,"/",basename(config_file),sep=""), overwrite=TRUE)
 
 sliding_windows = main_function.get_sliding_windows(binsize)
-
 
 readbam_rds_file = paste0(output_folder,"/",output_file_name,"_readbam.rds")
 if (main_functions.file_exists(c(readbam_rds_file)) & !rerun_readbam) {
@@ -92,5 +88,7 @@ if (main_functions.file_exists(c(runtime_var_file))) {
   file.remove(runtime_var_file)
 } else print(paste0("Writing runtime variables file ",runtime_var_file))
 
-cat(paste0("readbam_rds_file = \"",readbam_rds_file,"\"\n"),file=runtime_var_file,append = TRUE)
-cat(paste0("output_folder = \"",output_folder,"\"\n"),file=runtime_var_file,append = TRUE)
+cat(paste0("readbam_rds_file = \"",readbam_rds_file,"\"\n"),
+    file=runtime_var_file,append = TRUE)
+cat(paste0("output_folder = \"",output_folder,"\"\n"),
+    file=runtime_var_file,append = TRUE)
