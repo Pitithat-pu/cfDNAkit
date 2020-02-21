@@ -44,15 +44,7 @@ paste("Setting Min-Max length of Read Insert ",minimum_length," - ",maximum_leng
 paste("Setting Short Length interval ",short_length_range[1],"-",short_length_range[2],sep="")
 paste("Setting Long Length interval ",long_length_range[1],"-",long_length_range[2],sep="")
 paste("Setting z-score cutoff [",cutoff_zscore[2],",",cutoff_zscore[1],"]",sep="")
-# paste0("Create blacklist genomic regions")
-# blacklist_targets_gr = main_functions.create_blacklist_gr(c(duke_blacklist_region,dac_blacklist_region))
-# paste0("Done : Create blacklist genomic regions")
 
-
-
-# output_file_name <- paste(tools::file_path_sans_ext(basename(sample_bamfile)),
-#                           "_initzscore_",as.character(binsize),sep="")
-# paste0("Set output prefix to ",output_file_name)
 output_folder_temp = paste0(output_folder,"/",init_zscore_outdir_prefix,"_",
                             as.character(binsize),"k")
 if(!dir.exists(output_folder_temp)) {
@@ -66,24 +58,9 @@ if(!dir.exists(output_folder_temp)) {
 }
 output_folder = output_folder_temp
 
-# if(!dir.exists(paste0(output_folder,"/",init_zscore_outdir_prefix,"_",
-#                       as.character(binsize),"k"))) {
-#   paste("Creating output folder ",output_folder,sep="")
-#   dir.create(output_folder,recursive = TRUE)
-# } else {
-#   paste("Output folder ",output_folder," is already existing.",sep="")
-#   output_folder = paste(output_folder,format(Sys.time(), "%Y%b%d_%H%M"),sep="_")
-#   paste("Creating output folder ",output_folder,sep="")
-#   dir.create(output_folder,recursive = TRUE)
-# }
-# file.copy(config_file, paste(output_folder,"/",basename(config_file),sep=""), overwrite=TRUE)
-#
+
 sliding_windows = main_function.get_sliding_windows(binsize)
-#
-# print(paste("Reading bam file",sample_bamfile, sep=" "))
-# reads_extracted_df = apply(sliding_windows, 1, readbam)
-# print(paste("Reading bam file",sample_bamfile,"(Done)", sep=" "))
-# saveRDS(reads_extracted_df, paste(output_folder,"/",output_file_name,"_",binsize,"k_readbam.rds",sep=""))
+
 output_file_name <- paste(tools::file_path_sans_ext(basename(readbam_rds_file)),
                           "_initzscore",sep="")
 paste0("Set output prefix to ",output_file_name)
@@ -99,8 +76,6 @@ reads_extracted_df_info = as.data.frame(t(sapply(reads_extracted_df, function(x)
   passed_isize = abs(x$isize[which(abs(x$isize) <= maximum_length & abs(x$isize) >= minimum_length)])
   region_coverage = length(passed_isize)
   chr=x$rname[1]
-  # q_lowerbound = chromosomal_coverage_quantile[chr,1]
-  # q_upperbound = chromosomal_coverage_quantile[chr,2]
   q_lowerbound = ifelse(chr!="X",minimum_coverage_per_bin,minimum_coverage_per_bin/2)
   q_upperbound = max(region_coverage)
   trimmed = if (region_coverage>0 & q_lowerbound <=  region_coverage &  region_coverage <= q_upperbound ) FALSE else TRUE
@@ -146,21 +121,6 @@ totalread_df = as.data.frame(do.call(rbind,as.list(reads_extracted_df_info$`Tota
 readpair_df = as.data.frame(do.call(rbind,as.list(reads_extracted_df_info$`Read Pairs in range`[all_region_name_row])))
 shortread_df = as.data.frame(do.call(rbind,as.list(reads_extracted_df_info$short[all_region_name_row])))
 longread_df = as.data.frame(do.call(rbind,as.list(reads_extracted_df_info$long[all_region_name_row])))
-
-
-# totalread_df=as.data.frame(sapply(all_region_name,function(region_name){
-#   reads_extracted_df_info[region_name,]$`Total Fragments`
-# }))
-# readpair_df=as.data.frame(sapply(all_region_name,function(region_name){
-#   reads_extracted_df_info[region_name,]$`Read Pairs in range`
-# }))
-# shortread_df=as.data.frame(sapply(all_region_name,function(region_name){
-#   reads_extracted_df_info[region_name,]$short
-# }))
-# longread_df=as.data.frame(sapply(all_region_name,function(region_name){
-#   reads_extracted_df_info[region_name,]$long
-# }))
-# SLRatio = reads_extracted_df_info[all_region_name,]$SLRatio
 
 totalread_df$corrected = main_functions.bias_correct(totalread_df[,1],sliding_windows[all_region_name,]$gc/100)
 readpair_df$corrected = main_functions.bias_correct(readpair_df[,1],sliding_windows[all_region_name,]$gc/100)
