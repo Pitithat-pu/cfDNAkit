@@ -1,9 +1,9 @@
 cfDNAkit_dir="/abi/data2/puranach/cfDNAkit/R/"
-config_file=${cfDNAkit_dir}/config_files/generate_control/generate_PoN_500k.R
-runtime_variable_filename="pon_500k_runtime_variables.R"
+config_file=${cfDNAkit_dir}/config_files/generate_control/generate_PoN_chrarm.R
+runtime_variable_filename="pon_chrarm_runtime_variables.R"
 pid_dir="/icgc/dkfzlsdf/analysis/hipo2/hipo_K34R/whole_genome_sequencing/results_per_pid/"
 analysis_dir="/icgc/dkfzlsdf/analysis/hipo2/hipo_K34R/fragment_length_analysis/"
-cfDNAkit_outdir_prefix="createPON_500k"
+cfDNAkit_outdir_prefix="createPON_chrarm"
 sample_ids=" K34R-WYE4XG "
 load_R_cmd="module load R/3.5.1"
 
