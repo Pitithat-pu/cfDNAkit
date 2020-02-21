@@ -40,7 +40,7 @@ paste("Setting Long Length interval ",long_length_range[1],"-",long_length_range
 
 
 output_folder_temp = paste0(output_folder,"/",create_pon_outdir_prefix,"_",
-                            as.character(binsize),"k")
+                            as.character(binsize))
 if(!dir.exists(output_folder_temp)) {
   paste("Creating output folder ",output_folder_temp,sep="")
   dir.create(output_folder_temp,recursive = TRUE)
@@ -113,15 +113,20 @@ paste0("Done : Create blacklist genomic regions")
   }
   reads_extracted_df_test = as.data.frame(t(sapply(sampling_read,.get_isize_info)))
 }
+if (binsize=="chrarm"){
+  paste0("Reading chromosome arm file ",chromosome_arms_file)
+  sliding_windows = readRDS(chromosome_arms_file)
+} else {
+  print(paste(sep="","Deriving non-overlapping bin from QDNAseq binsize = ",binsize))
+  sliding_windows = main_function.get_sliding_windows(binsize)
+}
 
-print(paste(sep="","Deriving non-overlapping bin from QDNAseq binsize = ",binsize))
-sliding_windows = main_function.get_sliding_windows(binsize)
 
 # readbam_rds_file = paste0(output_folder,"/",output_file_name,"_readbam.rds")
 output_file_name <- paste(tools::file_path_sans_ext(basename(readbam_rds_file)),
                           "_pon",sep="")
 paste0("Set output prefix to ",output_file_name)
-
+paste0("Reading  ",readbam_rds_file)
 reads_extracted_df_control = readRDS(readbam_rds_file)
 
 
@@ -210,28 +215,6 @@ log2SLratio_df.corrected = as.data.frame(sapply(all_region_name,function(region_
   }
 
 }) )
-# print("Calculate z-score for each sample.")
-# all_region_name = rownames(delta_f_df.corrected)
-# control_zscore_df = as.data.frame(sapply(delta_f_df.corrected, function(sample_delta_f){
-#   sample_delta_f = do.call(rbind.data.frame, as.list(sample_delta_f))
-#   rownames(sample_delta_f) = all_region_name
-#   colnames(sample_delta_f) = c("Delta_F")
-#   zscore_matrix = main_functions.get_zscore_per_binsize(sample_delta_f,delta_f_df.corrected,binsize)
-#   zscore_matrix$size_based_zscore
-# }))
-# rownames(control_zscore_df) = all_region_name
-# print(paste("Writing result to ",output_folder,"/",output_file_name,"_zscore.csv", sep=""))
-# write.table(x = control_zscore_df, file = paste(output_folder,"/",output_file_name,"_zscore.csv", sep=""), sep = "\t")
-# print(paste("Done : Writing result to ",output_folder,"/",output_file_name,"_zscore.csv", sep=""))
-
-# control_zscore_df_non_NA = control_zscore_df[complete.cases(control_zscore_df),]
-# control_genomewide_zscores = sapply(control_zscore_df_non_NA, function(sample_zscore){
-#   main_functions.calculate_gw_zscore(sample_zscore,control_zscore_df_non_NA)
-# })
-
-# print(paste("Writing result to ",output_folder,"/",output_file_name,"_genomewide_zscores.csv", sep=""))
-# write.table(x = control_genomewide_zscores, file = paste(output_folder,"/",output_file_name,"_genomewide_zscores.csv", sep=""), sep = "\t")
-# print(paste("Done : Writing result to ",output_folder,"/",output_file_name,"_genomewide_zscores.csv", sep=""))
 
 delta_f_df_correlation = as.numeric(cor(use = "pairwise.complete.obs",delta_f_df,delta_f_df.corrected))
 fileConn<-file(paste0(output_folder,"/",output_file_name,"_deltaf_cor.txt"))
