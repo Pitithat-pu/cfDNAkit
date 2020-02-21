@@ -40,8 +40,8 @@ main_functions.create_blacklist_gr <- function(blacklist_regions){
   if(!main_functions.file_exists(blacklist_regions)) q('no')
   blacklist_targets_gr = GRanges()
   for (blacklist_region in blacklist_regions) {
-    blacklist_targets = as.data.frame(read.table(gzfile(blacklist_region),header = FALSE,
-                                                 sep = "\t"))[,1:3]
+    blacklist_targets = as.data.frame(read.table(gzfile(blacklist_region),
+                                                 header = FALSE,sep = "\t"))[,1:3]
     colnames(blacklist_targets) = c("chromosome","start","end")
     blacklist_targets_gr_temp=GRanges(seqnames = blacklist_targets$chromosome,
                                  ranges = IRanges(start = as.numeric(blacklist_targets$start),
@@ -55,7 +55,6 @@ main_functions.create_blacklist_gr <- function(blacklist_regions){
   filtered_gr <- GenomicRanges::setdiff(which,blacklist_targets_gr)
   return(filtered_gr)
 }
-## Extract read information into given sliding windows
 main_function.get_sliding_windows <- function(binsize){
   if (main_functions.file_exists(c(qdnaseq_sliding_windows_RDS))) {
     paste0("Reading QDNAseq sliding windows ",qdnaseq_sliding_windows_RDS)
@@ -63,6 +62,8 @@ main_function.get_sliding_windows <- function(binsize){
   }else{
     paste0("Load new QDNAseq sliding windows")
     bins = getBinAnnotations(binSize=binsize)
+    paste0("Save new QDNAseq sliding windows",qdnaseq_sliding_windows_RDS)
+    saveRDS(bin,qdnaseq_sliding_windows_RDS)
   }
   sliding_windows = as.data.frame(bins@data)
   sliding_windows = sliding_windows[which(sliding_windows$chromosome!="Y" &
@@ -74,24 +75,26 @@ main_functions.readbam <- function(sliding_windows){
   chrom <- sliding_windows[1]
   start <- sliding_windows[2]
   end <- sliding_windows[3]
+  # print(paste0(chrom," ",start," ",end))
   sliding_windows_gr <- GRanges(seqnames = chrom, ranges = IRanges(start=as.numeric(start), end=as.numeric(end)))
 
   if (exists('capture_targets_gr')) which <- subsetByOverlaps(capture_targets_gr,sliding_windows_gr)
-  else which <- GRanges(seqnames = chrom,
-                        ranges = IRanges(start=as.numeric(start), end=as.numeric(end)))
+  else which = sliding_windows_gr
   which_filtered <- .filter_blacklist_regions(which,blacklist_targets_gr)
   if (length(which_filtered)==0) {
-
     empty_list = list("qname" = as.character(), "rname" = factor(chrom),
                       "pos" = as.integer(),"isize"=as.integer())
     return(empty_list)
   }
   ## extract all forward-strand read
+
   flag=scanBamFlag(isPaired = TRUE,
                    isUnmappedQuery = FALSE,
                    isDuplicate = FALSE,isMinusStrand = FALSE,
                    hasUnmappedMate = FALSE, isSecondaryAlignment = FALSE,isMateMinusStrand = TRUE,
                    isNotPassingQualityControls = FALSE, isSupplementaryAlignment = FALSE)
+
+
   # flag=scanBamFlag(isPaired = TRUE, isProperPair=TRUE,
   #                  isUnmappedQuery = FALSE, isFirstMateRead = TRUE,
   #                  isDuplicate = FALSE,isSecondMateRead = FALSE,
