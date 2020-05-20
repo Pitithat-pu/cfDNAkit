@@ -56,7 +56,7 @@ paste0("Done : Create blacklist genomic regions")
 
 
 output_file_name <- paste(tools::file_path_sans_ext(basename(sample_bamfile)),
-                          "_",as.character(binsize),sep="")
+                          "_",as.character(binsize),"k",sep="")
 paste0("Set output prefix to ",output_file_name)
 
 if(!dir.exists(output_folder)) {

@@ -40,7 +40,7 @@ paste("Setting Long Length interval ",long_length_range[1],"-",long_length_range
 
 
 output_folder_temp = paste0(output_folder,"/",create_pon_outdir_prefix,"_",
-                            as.character(binsize))
+                            as.character(binsize),"k")
 if(!dir.exists(output_folder_temp)) {
   paste("Creating output folder ",output_folder_temp,sep="")
   dir.create(output_folder_temp,recursive = TRUE)
@@ -250,5 +250,7 @@ control_regions_df_towrite$chr_region = c(rep(rownames(control_regions_df),sampl
 control_regions_df_towrite$sampling_id = rep(1:sampling_size, each=length(rownames(control_regions_df)))
 
 print(paste("Writing regions_df result to ",output_folder,"/",output_file_name,"_regions_df.csv", sep=""))
-write.table(x = control_regions_df_towrite, file = paste(output_folder,"/",output_file_name,"_regions_df.csv", sep=""), sep = "\t")
+write.table(x = control_regions_df_towrite,
+            file = paste(output_folder,"/",output_file_name,"_regions_df.csv", sep=""),
+            sep = "\t",row.names = FALSE)
 print(paste("Done : Writing regions_df result to ",output_folder,"/",output_file_name,"_regions_df.csv", sep=""))
