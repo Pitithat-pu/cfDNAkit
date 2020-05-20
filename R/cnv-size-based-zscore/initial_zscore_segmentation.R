@@ -66,10 +66,6 @@ output_file_name <- paste(tools::file_path_sans_ext(basename(readbam_rds_file)),
 paste0("Set output prefix to ",output_file_name)
 
 reads_extracted_df = readRDS(readbam_rds_file)
-# chromosomal_coverage_quantile = main_functions.get_chromosomal_coverage_quantile(sliding_windows,reads_extracted_df,
-#                                                                   fragment_perwindow_lower_bound_percent,
-#                                                                   fragment_perwindow_upper_bound_percent)
-
 
 paste0("Getting Test Regions info")
 reads_extracted_df_info = as.data.frame(t(sapply(reads_extracted_df, function(x){
@@ -163,11 +159,6 @@ gc_SLRatio_corrected_plot = ggplot(reads_extracted_df_info) + aes(gc,SLRatio_cor
 grid.arrange(gc_coverage_plot, gc_coverage_corrected_plot,
              gc_SLRatio_plot,gc_SLRatio_corrected_plot, ncol=2)
 dev.off()
-# plot(sliding_windows$mappability,reads_extracted_df_info$`Total Fragments`,pch=16)
-# plot(sliding_windows$mappability,reads_extracted_df_info$`Total Fragments_corrected`,pch=16)
-# plot(sliding_windows$mappability,reads_extracted_df_info$SLRatio,pch=16)
-# plot(sliding_windows$mappability,reads_extracted_df_info$SLRatio_corrected,ylim=c(0,0.6),pch=16)
-
 
 
 test_regions_df_corrected = main_functions.get_short_ratio_corrected(reads_extracted_df_info, rownames(sliding_windows))

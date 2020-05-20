@@ -1,7 +1,7 @@
 options(digits=10)
 package_dir = "/abi/data2/puranach/cfDNAkit/R/"
 binsize = 100 #kb
-minimum_coverage_per_bin = 30
+minimum_coverage_per_bin = 20
 rerun_readbam = TRUE  ## read bam file again
 resource_dir=paste0(package_dir,"/resources/")
 main_function_file = paste0(package_dir,"/kit_functions/main_functions.R")

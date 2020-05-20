@@ -1,16 +1,21 @@
 options(digits=10)
-package_dir = "/abi/data2/puranach/cfDNAkit/R/"
-binsize = 100 #kb
+binsize = 100 ## binx size for GC-bias correction
 minimum_coverage_per_bin = 30
-rerun_readbam = TRUE  ## read bam file again
+rerun_readbam = FALSE  ## will read bam file again?
+package_dir = "/abi/data2/puranach/cfDNAkit/R/"
 resource_dir=paste0(package_dir,"/resources/")
 main_function_file = paste0(package_dir,"/kit_functions/main_functions.R")
-runtime_variables_filename = "runtime_variables_chrarm.R"
+
+
+### output setting
+
 output_regions_bed="/abi/data2/puranach/cfDNAkit/R/resources/chromosome_arms.bed"
-### Resource
+output_label_name="chrarm"
+runtime_variables_filename = paste0("runtime_variables_",output_label_name,".R")
+
+### Resource files
 chrLength_file = paste0(resource_dir,"hg19_chrTotalLength.tsv")
 control_data_dir = paste0("/icgc/dkfzlsdf/analysis/hipo2/hipo_K34R/fragment_length_analysis/K34R-WYE4XG/createPON_",binsize,"k/merged_PON/")
-
 # delta_f_control_file= paste0(control_data_dir,"BH01_rmdup_paired_mapped_deltaf_table_n30_1000.csv")
 control_shortread_file = paste0(control_data_dir,"PON_shortread.tsv")
 control_longread_file = paste0(control_data_dir,"PON_longread.tsv")
